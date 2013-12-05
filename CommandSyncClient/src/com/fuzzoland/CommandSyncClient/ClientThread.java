@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import org.bukkit.Bukkit;
+
 public class ClientThread extends Thread{
 
 	private CSC plugin;
@@ -18,12 +20,14 @@ public class ClientThread extends Thread{
 	private BufferedReader in;
 	private Integer heartbeat = 0;
 	private Integer qc = 0;
+	private String name;
 	
-	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat){
+	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name){
 		this.plugin = plugin;
 		this.ip = ip;
 		this.port = port;
 		this.heartbeat = heartbeat;
+		this.name = name;
 		connect();
 	}
 	
@@ -45,11 +49,19 @@ public class ClientThread extends Thread{
 								qc++;
 							}
 						}
-						if(in.ready()){
+						while(in.ready()){
 							String input = in.readLine();
 							if(!input.equals("heartbeat")){
 								System.out.println("[CommandSync] [" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Received input - " + input);
-								// Process input
+								String[] data = input.split(plugin.spacer);
+								if(data[0].equals("console")){
+									String command = data[2].replaceAll("\\+", " ");
+									if(data[1].equals("single") && !data[3].equals(name)){
+										return;
+									}
+									Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
+									System.out.println("[CommandSync] Ran command /" + command + ".");
+								}
 							}
 						}
 					}catch(IOException e){

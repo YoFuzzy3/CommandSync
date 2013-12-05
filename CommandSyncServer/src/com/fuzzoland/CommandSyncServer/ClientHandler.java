@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+
 public class ClientHandler extends Thread{
 
 	private CSS plugin;
@@ -32,11 +35,33 @@ public class ClientHandler extends Thread{
 					System.out.println("[CommandSync] Connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " has disconnected.");
 					return;
 				}
-				if(in.ready()){
+				while(in.ready()){
 					String input = in.readLine();
 					if(!input.equals("heartbeat")){
 						System.out.println("[CommandSync] [" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Received input - " + input);
-						plugin.oq.add(input);
+						String[] data = input.split(plugin.spacer);
+						if(data[0].equals("player")){
+							String command = "/" + data[2].replaceAll("\\+", " ");
+							if(data[1].equals("single")){
+								String name = data[3];
+								ProxiedPlayer player = ProxyServer.getInstance().getPlayer(name);
+								if(player != null){
+									player.chat(command);
+								}
+								System.out.println("[CommandSync] Ran command " + command + " for player " + name + ".");
+							}else if(data[1].equals("all")){
+								for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers()){
+									player.chat(command);
+								}
+								System.out.println("[CommandSync] Ran command " + command + " for all players.");
+							}
+						}else{
+							if(data[1].equals("bungee")){
+								// Execute command as BungeeCord console
+							}else{
+								plugin.oq.add(input);
+							}
+						}
 					}
 				}
 				Integer size = plugin.oq.size();

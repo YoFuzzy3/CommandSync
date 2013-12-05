@@ -1,13 +1,13 @@
 name: CommandSyncClient
 main: com.fuzzoland.CommandSyncClient.CSC
-version: 2.0
+version: 2.0b
 author: YoFuzzy3
 
 commands:
-  Sync:
-    description: Sync commands and more!
+  sync:
+    description: Synchronize commands across servers.
     
 permissions:
-  Sync.use:
-    description: Access to /Sync!
+  sync.use:
+    description: Access to /sync.
     default: op

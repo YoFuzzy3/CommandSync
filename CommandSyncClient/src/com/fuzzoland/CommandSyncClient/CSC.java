@@ -18,20 +18,26 @@ public class CSC extends JavaPlugin{
 
 	public ClientThread client;
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
+	public String spacer;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
+		if(data[4].equals("UNSET")){
+			System.out.println("[CommandSync] !!! YOU MUST SET THE SERVER'S NAME IN THE CONFIG BEFORE THE PLUGIN WILL WORK FOR THIS SERVER !!!");
+			return;
+		}
 		try{
-			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), data[4]);
 			client.start();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		spacer = data[3];
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[2];
+		String[] data = new String[5];
 		try{
 			File file = getDataFolder();
 			if(!file.exists()){
@@ -41,7 +47,8 @@ public class CSC extends JavaPlugin{
 				ps.println("ip=localhost");
 				ps.println("port=9190");
 				ps.println("heartbeat=5000");
-				ps.println("name=null");
+				ps.println("spacer=@#@");
+				ps.println("name=UNSET");
 				ps.close();
 				System.out.println("[CommandSync] New configuration file created.");
 			}

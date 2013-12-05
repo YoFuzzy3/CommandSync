@@ -19,6 +19,7 @@ public class CSS extends Plugin{
 
 	public ServerSocket server;
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
+	public String spacer;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
@@ -29,10 +30,11 @@ public class CSS extends Plugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		spacer = data[3];
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[2];
+		String[] data = new String[4];
 		try{
 			File file = getDataFolder();
 			if(!file.exists()){
@@ -42,6 +44,7 @@ public class CSS extends Plugin{
 				ps.println("ip=localhost");
 				ps.println("port=9190");
 				ps.println("heartbeat=5000");
+				ps.println("spacer=@#@");
 				ps.close();
 				System.out.println("[CommandSync] New configuration file created.");
 			}
