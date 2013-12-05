@@ -1,0 +1,4 @@
+name: CommandSyncServer
+main: com.fuzzoland.CommandSyncServer.CSS
+version: 2.0
+author: YoFuzzy3

@@ -1,0 +1,13 @@
+name: CommandSyncClient
+main: com.fuzzoland.CommandSyncClient.CSC
+version: 2.0
+author: YoFuzzy3
+
+commands:
+  Sync:
+    description: Sync commands and more!
+    
+permissions:
+  Sync.use:
+    description: Access to /Sync!
+    default: op
