@@ -19,21 +19,20 @@ public class CSC extends JavaPlugin{
 	public ClientThread client;
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
 	public Integer qc = 0;
-	public String spacer;
+	public String spacer = "@#@";
 	
 	public void onEnable(){
 		String[] data = loadConfig();
-		if(data[4].equals("UNSET")){
+		if(data[3].equals("UNSET")){
 			System.out.println("[CommandSync] !!! YOU MUST SET THE SERVER'S NAME IN THE CONFIG BEFORE THE PLUGIN WILL WORK FOR THIS SERVER !!!");
 			return;
 		}
 		try{
-			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), data[4]);
+			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), data[3]);
 			client.start();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		spacer = data[3];
 		loadData();
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
 	}
@@ -43,7 +42,7 @@ public class CSC extends JavaPlugin{
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[5];
+		String[] data = new String[4];
 		try{
 			File file = getDataFolder();
 			if(!file.exists()){
@@ -53,7 +52,6 @@ public class CSC extends JavaPlugin{
 				ps.println("ip=localhost");
 				ps.println("port=9190");
 				ps.println("heartbeat=1000");
-				ps.println("spacer=@#@");
 				ps.println("name=UNSET");
 				ps.close();
 				System.out.println("[CommandSync] New configuration file created.");
@@ -82,9 +80,9 @@ public class CSC extends JavaPlugin{
 			OutputStream os = new FileOutputStream(new File(getDataFolder(), "data.txt"));
 			PrintStream ps = new PrintStream(os);
 			for(String s : oq){
-				ps.println("q:" + s);
+				ps.println("oq:" + s);
 			}
-			ps.println("c:" + String.valueOf(qc));
+			ps.println("qc:" + String.valueOf(qc));
 			ps.close();
 			System.out.println("[CommandSync] All data saved.");
 		}catch(IOException e){
@@ -100,10 +98,10 @@ public class CSC extends JavaPlugin{
 				try{
 					String l = br.readLine();
 					while(l != null){
-						if(l.startsWith("q:")){
-							oq.add(new String(l.substring(2)));
-						}else if(l.startsWith("c:")){
-							qc = Integer.parseInt(new String(l.substring(2)));
+						if(l.startsWith("oq:")){
+							oq.add(new String(l.substring(3)));
+						}else if(l.startsWith("qc:")){
+							qc = Integer.parseInt(new String(l.substring(3)));
 						}
 						l = br.readLine();
 					}

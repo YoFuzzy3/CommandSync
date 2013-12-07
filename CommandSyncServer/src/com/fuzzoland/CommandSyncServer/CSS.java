@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +25,9 @@ public class CSS extends Plugin{
 
 	public ServerSocket server;
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
-	public List<String> pq = Collections.synchronizedList(new ArrayList<String>());
-	public Map<String, Integer> qc = new HashMap<String, Integer>();
-	public String spacer;
+	public Map<String, List<String>> pq = Collections.synchronizedMap(new HashMap<String, List<String>>());
+	public Map<String, Integer> qc = Collections.synchronizedMap(new HashMap<String, Integer>());
+	public String spacer = "@#@";
 	
 	public void onEnable(){
 		String[] data = loadConfig();
@@ -37,7 +38,6 @@ public class CSS extends Plugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		spacer = data[3];
 		loadData();
 		try{
 		    Metrics metrics = new Metrics(this);
@@ -46,14 +46,21 @@ public class CSS extends Plugin{
 				public int getValue(){
 					return oq.size();
 				}
+				public String getColumnName(){
+					return "Total queries sent";
+				}
 			});
 		    Graph graph2 = metrics.createGraph("Total servers linked");
 		    graph2.addPlotter(new Metrics.Plotter(){
 				public int getValue(){
 					return qc.keySet().size();
 				}
+				public String getColumnName(){
+					return "Total servers linked";
+				}
 			});
 		    metrics.start();
+		    getProxy().getPluginManager().registerListener(this, new EventListener(this));
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -64,7 +71,7 @@ public class CSS extends Plugin{
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[4];
+		String[] data = new String[3];
 		try{
 			File file = getDataFolder();
 			if(!file.exists()){
@@ -74,7 +81,6 @@ public class CSS extends Plugin{
 				ps.println("ip=localhost");
 				ps.println("port=9190");
 				ps.println("heartbeat=1000");
-				ps.println("spacer=@#@");
 				ps.close();
 				System.out.println("[CommandSync] New configuration file created.");
 			}
@@ -102,10 +108,16 @@ public class CSS extends Plugin{
 			OutputStream os = new FileOutputStream(new File(getDataFolder(), "data.txt"));
 			PrintStream ps = new PrintStream(os);
 			for(String s : oq){
-				ps.println("q:" + s);
+				ps.println("oq:" + s);
+			}
+			for(Entry<String, List<String>> e : pq.entrySet()){
+				String name = e.getKey();
+				for(String command : e.getValue()){
+					ps.println("pq:" + name + spacer + command);
+				}
 			}
 			for(Entry<String, Integer> e : qc.entrySet()){
-				ps.println("c:" + e.getKey() + spacer + String.valueOf(e.getValue()));
+				ps.println("qc:" + e.getKey() + spacer + String.valueOf(e.getValue()));
 			}
 			ps.close();
 			System.out.println("[CommandSync] All data saved.");
@@ -122,10 +134,20 @@ public class CSS extends Plugin{
 				try{
 					String l = br.readLine();
 					while(l != null){
-						if(l.startsWith("q:")){
-							oq.add(new String(l.substring(2)));
-						}else if(l.startsWith("c:")){
-							String[] parts = new String(l.substring(2)).split(spacer);
+						if(l.startsWith("oq:")){
+							oq.add(new String(l.substring(3)));
+						}else if(l.startsWith("pq:")){
+							String[] parts = new String(l.substring(3)).split(spacer);
+							if(pq.containsKey(parts[0])){
+								List<String> commands = pq.get(parts[0]);
+								commands.add(parts[1]);
+								pq.put(parts[0], commands);
+							}else{
+								List<String> commands = new ArrayList<String>(Arrays.asList(parts[1]));
+								pq.put(parts[0], commands);
+							}
+						}else if(l.startsWith("qc:")){
+							String[] parts = new String(l.substring(3)).split(spacer);
 							qc.put(parts[0], Integer.parseInt(parts[1]));
 						}
 						l = br.readLine();

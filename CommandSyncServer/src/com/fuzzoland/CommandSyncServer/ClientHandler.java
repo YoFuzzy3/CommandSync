@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class ClientHandler extends Thread{
@@ -48,20 +50,36 @@ public class ClientHandler extends Thread{
 							String command = "/" + data[2].replaceAll("\\+", " ");
 							if(data[1].equals("single")){
 								String name = data[3];
-								ProxiedPlayer player = ProxyServer.getInstance().getPlayer(name);
-								if(player != null){
-									player.chat(command);
+								Boolean found = false;
+								for(ProxiedPlayer player : plugin.getProxy().getPlayers()){
+									if(name.equals(player.getName())){
+										player.chat(command);
+										System.out.println("[CommandSync] Ran command " + command + " for player " + name + ".");
+										found = true;
+										break;
+									}
 								}
-								System.out.println("[CommandSync] Ran command " + command + " for player " + name + ".");
+								if(!found){
+									if(plugin.pq.containsKey(name)){
+										List<String> commands = plugin.pq.get(name);
+										commands.add(command);
+										plugin.pq.put(name, commands);
+									}else{
+										plugin.pq.put(name, new ArrayList<String>(Arrays.asList(command)));
+									}
+									System.out.println("[CommandSync] Since " + name + " is offline the command " + command + " will run when they come online.");
+								}
 							}else if(data[1].equals("all")){
-								for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers()){
+								for(ProxiedPlayer player : plugin.getProxy().getPlayers()){
 									player.chat(command);
 								}
 								System.out.println("[CommandSync] Ran command " + command + " for all online players.");
 							}
 						}else{
 							if(data[1].equals("bungee")){
-								System.out.println("[CommandSync] A request to execute a BungeeCord command was received. Unfortunately this feature is not possible yet.");
+								String command = data[2].replaceAll("\\+", " ");
+								plugin.getProxy().getPluginManager().dispatchCommand(plugin.getProxy().getConsole(), command);
+								System.out.println("[CommandSync] Ran command /" + command + ".");
 							}else{
 								plugin.oq.add(input);
 							}
