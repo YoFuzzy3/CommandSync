@@ -19,7 +19,6 @@ public class ClientThread extends Thread{
 	private PrintWriter out;
 	private BufferedReader in;
 	private Integer heartbeat = 0;
-	private Integer qc = 0;
 	private String name;
 	
 	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name){
@@ -41,13 +40,15 @@ public class ClientThread extends Thread{
 				}else{
 					try{
 						Integer size = plugin.oq.size();
-						if(size > qc){
-							for(int i = qc; i < size; i++){
+						Integer count = plugin.qc;
+						if(size > count){
+							for(int i = count; i < size; i++){
+								count++;
 								String output = plugin.oq.get(i);
 								out.println(output);
 								System.out.println("[CommandSync] [" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Sent output - " + output);
-								qc++;
 							}
+							plugin.qc = count;
 						}
 						while(in.ready()){
 							String input = in.readLine();
@@ -56,9 +57,6 @@ public class ClientThread extends Thread{
 								String[] data = input.split(plugin.spacer);
 								if(data[0].equals("console")){
 									String command = data[2].replaceAll("\\+", " ");
-									if(data[1].equals("single") && !data[3].equals(name)){
-										return;
-									}
 									Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
 									System.out.println("[CommandSync] Ran command /" + command + ".");
 								}
@@ -85,6 +83,7 @@ public class ClientThread extends Thread{
 			this.out = new PrintWriter(socket.getOutputStream(), true);
 			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			this.connected = true;
+			out.println(name);
 			System.out.println("[CommandSync] Connected to " + ip.getHostName() + ":" + String.valueOf(port) + ".");
 		}catch(IOException e){
 			System.out.println("[CommandSync] Could not connect to the server.");

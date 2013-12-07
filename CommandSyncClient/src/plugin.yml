@@ -1,4 +1,4 @@
-name: CommandSyncClient
+name: CommandSync
 main: com.fuzzoland.CommandSyncClient.CSC
 version: 2.0b
 author: YoFuzzy3

@@ -18,6 +18,7 @@ public class CSC extends JavaPlugin{
 
 	public ClientThread client;
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
+	public Integer qc = 0;
 	public String spacer;
 	
 	public void onEnable(){
@@ -33,7 +34,12 @@ public class CSC extends JavaPlugin{
 			e.printStackTrace();
 		}
 		spacer = data[3];
+		loadData();
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
+	}
+	
+	public void onDisable(){
+		saveData();
 	}
 	
 	private String[] loadConfig(){
@@ -46,7 +52,7 @@ public class CSC extends JavaPlugin{
 				PrintStream ps = new PrintStream(os);
 				ps.println("ip=localhost");
 				ps.println("port=9190");
-				ps.println("heartbeat=5000");
+				ps.println("heartbeat=1000");
 				ps.println("spacer=@#@");
 				ps.println("name=UNSET");
 				ps.close();
@@ -69,5 +75,47 @@ public class CSC extends JavaPlugin{
 			e.printStackTrace();
 		}
 		return data;
+	}
+	
+	private void saveData(){
+		try{
+			OutputStream os = new FileOutputStream(new File(getDataFolder(), "data.txt"));
+			PrintStream ps = new PrintStream(os);
+			for(String s : oq){
+				ps.println("q:" + s);
+			}
+			ps.println("c:" + String.valueOf(qc));
+			ps.close();
+			System.out.println("[CommandSync] All data saved.");
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	private void loadData(){
+		try{
+			File file = new File(getDataFolder(), "data.txt");
+			if(file.exists()){
+				BufferedReader br = new BufferedReader(new FileReader(file));
+				try{
+					String l = br.readLine();
+					while(l != null){
+						if(l.startsWith("q:")){
+							oq.add(new String(l.substring(2)));
+						}else if(l.startsWith("c:")){
+							qc = Integer.parseInt(new String(l.substring(2)));
+						}
+						l = br.readLine();
+					}
+					System.out.println("[CommandSync] All data loaded.");
+				}finally{
+					br.close();
+				}
+			}else{
+				System.out.println("[CommandSync] A data file was not found. If this is your first start-up with the plugin, this is normal.");
+			}
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

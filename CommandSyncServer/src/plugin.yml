@@ -1,4 +1,4 @@
-name: CommandSyncServer
+name: CommandSync
 main: com.fuzzoland.CommandSyncServer.CSS
 version: 2.0b
 author: YoFuzzy3
