@@ -13,9 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.fuzzoland.CommandSyncServer.Metrics.Graph;
 
@@ -24,13 +26,20 @@ import net.md_5.bungee.api.plugin.Plugin;
 public class CSS extends Plugin{
 
 	public ServerSocket server;
+	public Set<String> c = Collections.synchronizedSet(new HashSet<String>());
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
 	public Map<String, List<String>> pq = Collections.synchronizedMap(new HashMap<String, List<String>>());
 	public Map<String, Integer> qc = Collections.synchronizedMap(new HashMap<String, Integer>());
 	public String spacer = "@#@";
+	public String user;
+	public String pass;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
+		if(data[3].equals("UNSET") || data[4].equals("UNSET")){
+			System.out.println("[CommandSync] !!! THE CONFIG FILE CONTAINS UNSET VALUES - YOU MUST FIX THEM BEFORE THE PLUGIN WILL WORK !!! ");
+			return;
+		}
 		try{
 			server = new ServerSocket(Integer.parseInt(data[1]), 50, InetAddress.getByName(data[0]));
 			System.out.println("[CommandSync] Opened server on " + data[0] + ":" + data[1] + ".");
@@ -38,6 +47,8 @@ public class CSS extends Plugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		user = data[3];
+		pass = data[4];
 		loadData();
 		try{
 		    Metrics metrics = new Metrics(this);
@@ -71,32 +82,29 @@ public class CSS extends Plugin{
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[3];
+		String[] defaults = new String[]{
+			"ip=localhost", "port=9190", "heartbeat=1000", "user=UNSET", "pass=UNSET"
+		};
+		String[] data = new String[defaults.length];
 		try{
-			File file = getDataFolder();
+			File file = new File(getDataFolder(), "config.txt");
 			if(!file.exists()){
-				file.mkdirs();
-				OutputStream os = new FileOutputStream(file + "/config.txt");
-				PrintStream ps = new PrintStream(os);
-				ps.println("ip=localhost");
-				ps.println("port=9190");
-				ps.println("heartbeat=1000");
-				ps.close();
-				System.out.println("[CommandSync] New configuration file created.");
+				file.createNewFile();
 			}
-			BufferedReader br = new BufferedReader(new FileReader(file + "/config.txt"));
-			try{
+			PrintStream ps = new PrintStream(new FileOutputStream(file));
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			for(int i = 0; i < defaults.length; i++){
 				String l = br.readLine();
-				Integer i = 0;
-				while(l != null){
+				if(l == null){
+					ps.println(defaults[i]);
+					data[i] = defaults[i].split("=")[1];
+				}else{
 					data[i] = l.split("=")[1];
-					i++;
-					l = br.readLine();
 				}
-				System.out.println("[CommandSync] Configuration file loaded.");
-			}finally{
-				br.close();
 			}
+			ps.close();
+			br.close();
+			System.out.println("[CommandSync] Configuration file loaded.");
 		}catch(IOException e){
 			e.printStackTrace();
 		}

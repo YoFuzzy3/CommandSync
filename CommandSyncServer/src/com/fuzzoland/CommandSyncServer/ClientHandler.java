@@ -23,14 +23,32 @@ public class ClientHandler extends Thread{
 	public ClientHandler(CSS plugin, Socket socket, Integer heartbeat) throws IOException{
 		this.plugin = plugin;
 		this.socket = socket;
-		this.out = new PrintWriter(socket.getOutputStream(), true);
-		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		this.heartbeat = heartbeat;
-		this.name = in.readLine();
+		out = new PrintWriter(socket.getOutputStream(), true);
+		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		System.out.println("[CommandSync] Received new connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + ".");
+		String user = in.readLine();
+		String pass = in.readLine();
+		if(!user.equals(plugin.user) || !pass.equals(plugin.pass)){
+			System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided invalid username or password.");
+			out.println("n");
+			socket.close();
+			return;
+		}
+		out.println("y");
+		name = in.readLine();
+		if(plugin.c.contains(name)){
+			System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided a name that is already connected.");
+			out.println("n");
+			socket.close();
+			return;
+		}
+		out.println("y");
 		if(!plugin.qc.containsKey(name)){
 			plugin.qc.put(name, 0);
 		}
-		System.out.println("[CommandSync] Received new connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " under name " + name + ".");
+		plugin.c.add(name);
+		System.out.println("[CommandSync] Connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " under name " + name + " has been authorised.");
 	}
 
 	public void run(){
@@ -39,6 +57,7 @@ public class ClientHandler extends Thread{
 				out.println("heartbeat");
 				if(out.checkError()){
 					System.out.println("[CommandSync] Connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " under name " + name + " has disconnected.");
+					plugin.c.remove(name);
 					return;
 				}
 				while(in.ready()){
@@ -106,9 +125,8 @@ public class ClientHandler extends Thread{
 					plugin.qc.put(name, count);
 				}
 				sleep(heartbeat);
-			}catch(IOException e){
-				e.printStackTrace();
-			}catch(InterruptedException e){
+			}catch(Exception e){
+				plugin.c.remove(name);
 				e.printStackTrace();
 			}
 		}

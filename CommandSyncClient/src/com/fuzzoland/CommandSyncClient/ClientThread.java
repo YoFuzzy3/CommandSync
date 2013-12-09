@@ -27,7 +27,7 @@ public class ClientThread extends Thread{
 		this.port = port;
 		this.heartbeat = heartbeat;
 		this.name = name;
-		connect();
+		connect(false);
 	}
 	
 	public void run(){
@@ -67,7 +67,7 @@ public class ClientThread extends Thread{
 					}					
 				}
 			}else{
-				connect();
+				connect(true);
 			}
 			try{
 				sleep(heartbeat);
@@ -77,14 +77,31 @@ public class ClientThread extends Thread{
 		}
 	}
 	
-	private void connect(){
+	private void connect(Boolean sleep){
+		if(sleep){
+			try{
+				sleep(10000);
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
 		try{
-			this.socket = new Socket(ip, port);
-			this.out = new PrintWriter(socket.getOutputStream(), true);
-			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			this.connected = true;
+			socket = new Socket(ip, port);
+			out = new PrintWriter(socket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			out.println(plugin.user);
+			out.println(plugin.pass);
+			if(in.readLine().equals("n")){
+				System.out.println("[CommandSync] Sent invalid username or password.");
+				return;
+			}
 			out.println(name);
-			System.out.println("[CommandSync] Connected to " + ip.getHostName() + ":" + String.valueOf(port) + ".");
+			if(in.readLine().equals("n")){
+				System.out.println("[CommandSync] Sent a name that is already connected.");
+				return;
+			}
+			connected = true;
+			System.out.println("[CommandSync] Connected to " + ip.getHostName() + ":" + String.valueOf(port) + " under name " + name + ".");
 		}catch(IOException e){
 			System.out.println("[CommandSync] Could not connect to the server.");
 		}

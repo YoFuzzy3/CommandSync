@@ -20,11 +20,13 @@ public class CSC extends JavaPlugin{
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
 	public Integer qc = 0;
 	public String spacer = "@#@";
+	public String user;
+	public String pass;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
-		if(data[3].equals("UNSET")){
-			System.out.println("[CommandSync] !!! YOU MUST SET THE SERVER'S NAME IN THE CONFIG BEFORE THE PLUGIN WILL WORK FOR THIS SERVER !!!");
+		if(data[3].equals("UNSET") || data[4].equals("UNSET") || data[5].equals("UNSET")){
+			System.out.println("[CommandSync] !!! THE CONFIG FILE CONTAINS UNSET VALUES - YOU MUST FIX THEM BEFORE THE PLUGIN WILL WORK !!! ");
 			return;
 		}
 		try{
@@ -33,6 +35,8 @@ public class CSC extends JavaPlugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		user = data[4];
+		pass = data[5];
 		loadData();
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
 	}
@@ -42,33 +46,29 @@ public class CSC extends JavaPlugin{
 	}
 	
 	private String[] loadConfig(){
-		String[] data = new String[4];
+		String[] defaults = new String[]{
+			"ip=localhost", "port=9190", "heartbeat=1000", "name=UNSET", "user=UNSET", "pass=UNSET"
+		};
+		String[] data = new String[defaults.length];
 		try{
-			File file = getDataFolder();
+			File file = new File(getDataFolder(), "config.txt");
 			if(!file.exists()){
-				file.mkdirs();
-				OutputStream os = new FileOutputStream(file + "/config.txt");
-				PrintStream ps = new PrintStream(os);
-				ps.println("ip=localhost");
-				ps.println("port=9190");
-				ps.println("heartbeat=1000");
-				ps.println("name=UNSET");
-				ps.close();
-				System.out.println("[CommandSync] New configuration file created.");
+				file.createNewFile();
 			}
-			BufferedReader br = new BufferedReader(new FileReader(file + "/config.txt"));
-			try{
+			PrintStream ps = new PrintStream(new FileOutputStream(file));
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			for(int i = 0; i < defaults.length; i++){
 				String l = br.readLine();
-				Integer i = 0;
-				while(l != null){
+				if(l == null){
+					ps.println(defaults[i]);
+					data[i] = defaults[i].split("=")[1];
+				}else{
 					data[i] = l.split("=")[1];
-					i++;
-					l = br.readLine();
 				}
-				System.out.println("[CommandSync] Configuration file loaded.");
-			}finally{
-				br.close();
 			}
+			ps.close();
+			br.close();
+			System.out.println("[CommandSync] Configuration file loaded.");
 		}catch(IOException e){
 			e.printStackTrace();
 		}
