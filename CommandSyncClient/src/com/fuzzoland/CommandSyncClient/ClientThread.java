@@ -9,7 +9,7 @@ import java.net.Socket;
 
 import org.bukkit.Bukkit;
 
-public class ClientThread extends Thread{
+public class ClientThread extends Thread {
 
 	private CSC plugin;
 	private InetAddress ip;
@@ -21,7 +21,7 @@ public class ClientThread extends Thread{
 	private Integer heartbeat = 0;
 	private String name;
 	
-	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name){
+	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name) {
 		this.plugin = plugin;
 		this.ip = ip;
 		this.port = port;
@@ -30,79 +30,79 @@ public class ClientThread extends Thread{
 		connect(false);
 	}
 	
-	public void run(){
-		while(true){
-			if(connected){
+	public void run() {
+		while(true) {
+			if(connected) {
 				out.println("heartbeat");
-				if(out.checkError()){
+				if(out.checkError()) {
 					connected = false;
-					System.out.println("[CommandSync] Lost connection to the server.");
-				}else{
-					try{
+					plugin.debugger.debug("Lost connection to the server.");
+				} else {
+					try {
 						Integer size = plugin.oq.size();
 						Integer count = plugin.qc;
-						if(size > count){
-							for(int i = count; i < size; i++){
+						if(size > count) {
+							for(int i = count; i < size; i++) {
 								count++;
 								String output = plugin.oq.get(i);
 								out.println(output);
-								System.out.println("[CommandSync] [" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Sent output - " + output);
+								plugin.debugger.debug("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Sent output - " + output);
 							}
 							plugin.qc = count;
 						}
-						while(in.ready()){
+						while(in.ready()) {
 							String input = in.readLine();
-							if(!input.equals("heartbeat")){
-								System.out.println("[CommandSync] [" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Received input - " + input);
+							if(!input.equals("heartbeat")) {
+							    plugin.debugger.debug("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] " + "Received input - " + input);
 								String[] data = input.split(plugin.spacer);
-								if(data[0].equals("console")){
+								if(data[0].equals("console")) {
 									String command = data[2].replaceAll("\\+", " ");
 									Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command);
-									System.out.println("[CommandSync] Ran command /" + command + ".");
+									plugin.debugger.debug("Ran command /" + command + ".");
 								}
 							}
 						}
-					}catch(IOException e){
+					} catch(IOException e) {
 						e.printStackTrace();
 					}					
 				}
-			}else{
+			} else {
 				connect(true);
 			}
-			try{
+			try {
 				sleep(heartbeat);
-			}catch(InterruptedException e){
+			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	private void connect(Boolean sleep){
-		if(sleep){
-			try{
+	private void connect(Boolean sleep) {
+		if(sleep) {
+			try {
 				sleep(10000);
-			}catch(InterruptedException e){
+			} catch(InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		try{
+		try {
 			socket = new Socket(ip, port);
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out.println(name);
-			if(in.readLine().equals("n")){
-			    System.out.println("[CommandSync] The name " + name + " is already connected.");
+			if(in.readLine().equals("n")) {
+			    plugin.debugger.debug("The name " + name + " is already connected.");
 			    return;
 			}
 			out.println(plugin.pass);
-			if(in.readLine().equals("n")){
-				System.out.println("[CommandSync] The password is invalid.");
+			if(in.readLine().equals("n")) {
+			    plugin.debugger.debug("The password is invalid.");
 				return;
 			}
 			connected = true;
-			System.out.println("[CommandSync] Connected to " + ip.getHostName() + ":" + String.valueOf(port) + " under name " + name + ".");
-		}catch(IOException e){
-			System.out.println("[CommandSync] Could not connect to the server.");
+			plugin.debugger.debug("Connected to " + ip.getHostName() + ":" + String.valueOf(port) + " under name " + name + ".");
+		} catch(IOException e) {
+		    plugin.debugger.debug("Could not connect to the server.");
 		}
 	}
 }
