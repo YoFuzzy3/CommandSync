@@ -27,18 +27,17 @@ public class ClientHandler extends Thread{
 		out = new PrintWriter(socket.getOutputStream(), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		System.out.println("[CommandSync] Received new connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + ".");
-		String user = in.readLine();
-		String pass = in.readLine();
-		if(!user.equals(plugin.user) || !pass.equals(plugin.pass)){
-			System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided invalid username or password.");
-			out.println("n");
-			socket.close();
-			return;
-		}
-		out.println("y");
 		name = in.readLine();
 		if(plugin.c.contains(name)){
-			System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided a name that is already connected.");
+		    System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided a name that is already connected.");
+		    out.println("n");
+		    socket.close();
+		    return;
+		}
+		out.println("y");
+		String pass = in.readLine();
+		if(!pass.equals(plugin.pass)){
+			System.out.println("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided an invalid password.");
 			out.println("n");
 			socket.close();
 			return;

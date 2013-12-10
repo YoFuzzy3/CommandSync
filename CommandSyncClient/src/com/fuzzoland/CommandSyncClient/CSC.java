@@ -20,12 +20,11 @@ public class CSC extends JavaPlugin{
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
 	public Integer qc = 0;
 	public String spacer = "@#@";
-	public String user;
 	public String pass;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
-		if(data[3].equals("UNSET") || data[4].equals("UNSET") || data[5].equals("UNSET")){
+		if(data[3].equals("UNSET") || data[4].equals("UNSET")){
 			System.out.println("[CommandSync] !!! THE CONFIG FILE CONTAINS UNSET VALUES - YOU MUST FIX THEM BEFORE THE PLUGIN WILL WORK !!! ");
 			return;
 		}
@@ -35,8 +34,7 @@ public class CSC extends JavaPlugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		user = data[4];
-		pass = data[5];
+		pass = data[4];
 		loadData();
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
 	}
@@ -47,7 +45,7 @@ public class CSC extends JavaPlugin{
 	
 	private String[] loadConfig(){
 		String[] defaults = new String[]{
-			"ip=localhost", "port=9190", "heartbeat=1000", "name=UNSET", "user=UNSET", "pass=UNSET"
+			"ip=localhost", "port=9190", "heartbeat=1000", "name=UNSET", "pass=UNSET"
 		};
 		String[] data = new String[defaults.length];
 		try{

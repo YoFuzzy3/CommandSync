@@ -89,15 +89,14 @@ public class ClientThread extends Thread{
 			socket = new Socket(ip, port);
 			out = new PrintWriter(socket.getOutputStream(), true);
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			out.println(plugin.user);
-			out.println(plugin.pass);
-			if(in.readLine().equals("n")){
-				System.out.println("[CommandSync] Sent invalid username or password.");
-				return;
-			}
 			out.println(name);
 			if(in.readLine().equals("n")){
-				System.out.println("[CommandSync] Sent a name that is already connected.");
+			    System.out.println("[CommandSync] The name " + name + " is already connected.");
+			    return;
+			}
+			out.println(plugin.pass);
+			if(in.readLine().equals("n")){
+				System.out.println("[CommandSync] The password is invalid.");
 				return;
 			}
 			connected = true;

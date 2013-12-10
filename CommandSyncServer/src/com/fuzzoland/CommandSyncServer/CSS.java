@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.fuzzoland.CommandSyncServer.Metrics.Graph;
-
 import net.md_5.bungee.api.plugin.Plugin;
+
+import com.fuzzoland.CommandSyncServer.Metrics.Graph;
 
 public class CSS extends Plugin{
 
@@ -31,12 +31,11 @@ public class CSS extends Plugin{
 	public Map<String, List<String>> pq = Collections.synchronizedMap(new HashMap<String, List<String>>());
 	public Map<String, Integer> qc = Collections.synchronizedMap(new HashMap<String, Integer>());
 	public String spacer = "@#@";
-	public String user;
 	public String pass;
 	
 	public void onEnable(){
 		String[] data = loadConfig();
-		if(data[3].equals("UNSET") || data[4].equals("UNSET")){
+		if(data[3].equals("UNSET")){
 			System.out.println("[CommandSync] !!! THE CONFIG FILE CONTAINS UNSET VALUES - YOU MUST FIX THEM BEFORE THE PLUGIN WILL WORK !!! ");
 			return;
 		}
@@ -47,8 +46,7 @@ public class CSS extends Plugin{
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		user = data[3];
-		pass = data[4];
+		pass = data[3];
 		loadData();
 		try{
 		    Metrics metrics = new Metrics(this);
@@ -83,7 +81,7 @@ public class CSS extends Plugin{
 	
 	private String[] loadConfig(){
 		String[] defaults = new String[]{
-			"ip=localhost", "port=9190", "heartbeat=1000", "user=UNSET", "pass=UNSET"
+			"ip=localhost", "port=9190", "heartbeat=1000", "pass=UNSET"
 		};
 		String[] data = new String[defaults.length];
 		try{
