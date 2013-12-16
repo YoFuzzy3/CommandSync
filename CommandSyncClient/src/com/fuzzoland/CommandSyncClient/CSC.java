@@ -51,7 +51,11 @@ public class CSC extends JavaPlugin {
 		};
 		String[] data = new String[defaults.length];
         try {
-            File file = new File(getDataFolder(), "config.txt");
+            File folder = getDataFolder();
+            if(!folder.exists()) {
+                folder.mkdir();
+            }
+            File file = new File(folder, "config.txt");
             if(!file.exists()) {
                 file.createNewFile();
             }
