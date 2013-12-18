@@ -31,7 +31,6 @@ public class CSS extends Plugin {
 	public Map<String, List<String>> pq = Collections.synchronizedMap(new HashMap<String, List<String>>());
 	public Map<String, Integer> qc = Collections.synchronizedMap(new HashMap<String, Integer>());
 	public String spacer = "@#@";
-	public String pass;
 	public Debugger debugger;
 	
 	public void onEnable() {
@@ -43,11 +42,10 @@ public class CSS extends Plugin {
 		try {
 			server = new ServerSocket(Integer.parseInt(data[1]), 50, InetAddress.getByName(data[0]));
 			debugger.debug("Opened server on " + data[0] + ":" + data[1] + ".");
-			new ClientListener(this, Integer.parseInt(data[2])).start();
+			new ClientListener(this, Integer.parseInt(data[2]), data[3]).start();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		pass = data[3];
 		loadData();
 		try {
 		    Metrics metrics = new Metrics(this);

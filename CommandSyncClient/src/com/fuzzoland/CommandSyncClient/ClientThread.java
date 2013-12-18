@@ -20,13 +20,16 @@ public class ClientThread extends Thread {
 	private BufferedReader in;
 	private Integer heartbeat = 0;
 	private String name;
+	private String pass;
+	private String version = "2.3";
 	
-	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name) {
+	public ClientThread(CSC plugin, InetAddress ip, Integer port, Integer heartbeat, String name, String pass) {
 		this.plugin = plugin;
 		this.ip = ip;
 		this.port = port;
 		this.heartbeat = heartbeat;
 		this.name = name;
+		this.pass = pass;
 		connect(false);
 	}
 	
@@ -92,13 +95,21 @@ public class ClientThread extends Thread {
 			out.println(name);
 			if(in.readLine().equals("n")) {
 			    plugin.debugger.debug("The name " + name + " is already connected.");
+			    socket.close();
 			    return;
 			}
-			out.println(plugin.pass);
+			out.println(pass);
 			if(in.readLine().equals("n")) {
-			    plugin.debugger.debug("The password is invalid.");
+			    plugin.debugger.debug("The password you provided is invalid.");
+			    socket.close();
 				return;
 			}
+            out.println(version);
+            if(in.readLine().equals("n")) {
+                plugin.debugger.debug("The client's version of " + version + " does not match the server's version of " + in.readLine() + ".");
+                socket.close();
+                return;
+            }
 			connected = true;
 			plugin.debugger.debug("Connected to " + ip.getHostName() + ":" + String.valueOf(port) + " under name " + name + ".");
 		} catch(IOException e) {

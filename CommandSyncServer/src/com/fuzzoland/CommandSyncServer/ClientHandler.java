@@ -19,11 +19,14 @@ public class ClientHandler extends Thread {
     private BufferedReader in;
     private Integer heartbeat = 0;
     private String name;
+    private String pass;
+    private String version = "2.3";
 	
-	public ClientHandler(CSS plugin, Socket socket, Integer heartbeat) throws IOException {
+	public ClientHandler(CSS plugin, Socket socket, Integer heartbeat, String pass) throws IOException {
 		this.plugin = plugin;
 		this.socket = socket;
 		this.heartbeat = heartbeat;
+		this.pass = pass;
 		out = new PrintWriter(socket.getOutputStream(), true);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		plugin.debugger.debug("Received new connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + ".");
@@ -35,16 +38,24 @@ public class ClientHandler extends Thread {
 		    return;
 		}
 		out.println("y");
-		String pass = in.readLine();
-		if(!pass.equals(plugin.pass)) {
+		if(!in.readLine().equals(this.pass)) {
 		    plugin.debugger.debug("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Provided an invalid password.");
 			out.println("n");
 			socket.close();
 			return;
 		}
 		out.println("y");
+		String version = in.readLine();
+		if(!version.equals(this.version)) {
+		    plugin.debugger.debug("[" + socket.getInetAddress().getHostName() + ":" + socket.getPort() + "] [" + name + "] Client's version of " + version + " does not match the server's version of " +  this.version + ".");
+		    out.println("n");
+		    out.println(this.version);
+		    socket.close();
+		    return;
+		}
+		out.println("y");
 		if(!plugin.qc.containsKey(name)) {
-			plugin.qc.put(name, 0);
+		    plugin.qc.put(name, 0);
 		}
 		plugin.c.add(name);
 		plugin.debugger.debug("Connection from " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " under name " + name + " has been authorised.");

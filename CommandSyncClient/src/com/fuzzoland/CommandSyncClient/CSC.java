@@ -20,7 +20,6 @@ public class CSC extends JavaPlugin {
 	public List<String> oq = Collections.synchronizedList(new ArrayList<String>());
 	public Integer qc = 0;
 	public String spacer = "@#@";
-	public String pass;
 	public Debugger debugger;
 	
 	public void onEnable() {
@@ -30,12 +29,11 @@ public class CSC extends JavaPlugin {
 			return;
 		}
 		try {
-			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), data[3]);
+			client = new ClientThread(this, InetAddress.getByName(data[0]), Integer.parseInt(data[1]), Integer.parseInt(data[2]), data[3], data[4]);
 			client.start();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		pass = data[4];
 		loadData();
 		getCommand("Sync").setExecutor(new CommandSynchronize(this));
 	}
